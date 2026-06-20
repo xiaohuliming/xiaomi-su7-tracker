@@ -1,0 +1,1317 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>车品周边商城 - 小米 SU7 交付进度追踪</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css">
+    <link rel="stylesheet" href="css/common.css">
+    <style>
+        body {
+            font-family: 'PingFang SC', 'Microsoft YaHei', sans-serif;
+            background-color: #f5f5f5;
+            color: #333;
+        }
+        
+        .header {
+            background-color: #fff;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            padding: 15px 0;
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            transition: all 0.3s ease;
+        }
+        
+        .header.scrolled {
+            padding: 10px 0;
+            box-shadow: 0 2px 15px rgba(0,0,0,0.15);
+        }
+        
+        .logo img {
+            height: 40px;
+            transition: transform 0.3s ease;
+        }
+        
+        .logo img:hover {
+            transform: scale(1.05);
+        }
+        
+        .nav-container {
+            display: flex;
+            align-items: center;
+        }
+        
+        .nav-link {
+            color: #333;
+            margin: 0 15px;
+            font-weight: 500;
+            position: relative;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            padding: 5px 0;
+        }
+        
+        .nav-link:hover {
+            color: #ff6700;
+        }
+        
+        .nav-link.active {
+            color: #ff6700;
+            font-weight: 600;
+        }
+        
+        .nav-link::after {
+            content: '';
+            position: absolute;
+            width: 0;
+            height: 2px;
+            bottom: 0;
+            left: 0;
+            background-color: #ff6700;
+            transition: width 0.3s ease;
+        }
+        
+        .nav-link:hover::after,
+        .nav-link.active::after {
+            width: 100%;
+        }
+        
+        .dropdown-container {
+            position: relative;
+            display: inline-block;
+        }
+        
+        .dropdown-menu {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            min-width: 180px;
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            padding: 10px 0;
+            opacity: 0;
+            visibility: hidden;
+            transform: translateY(10px);
+            transition: all 0.3s ease;
+            z-index: 1000;
+        }
+        
+        .dropdown-container:hover .dropdown-menu {
+            opacity: 1;
+            visibility: visible;
+            transform: translateY(0);
+        }
+        
+        .dropdown-item {
+            display: block;
+            padding: 8px 20px;
+            color: #333;
+            text-decoration: none;
+            transition: all 0.3s ease;
+        }
+        
+        .dropdown-item:hover {
+            background-color: #f8f8f8;
+            color: #ff6700;
+            padding-left: 25px;
+        }
+        
+        .dropdown-divider {
+            height: 1px;
+            background-color: #eee;
+            margin: 8px 0;
+        }
+        
+        .user-dropdown {
+            right: 0;
+            left: auto;
+            min-width: 200px;
+        }
+        
+        .search-box {
+            position: relative;
+            transition: all 0.3s ease;
+        }
+        
+        .search-input {
+            padding-right: 40px;
+            border-radius: 20px;
+            border: 1px solid #ddd;
+            padding: 8px 15px;
+            width: 100%;
+            transition: all 0.3s ease;
+            background-color: #f8f8f8;
+        }
+        
+        .search-input:focus {
+            outline: none;
+            border-color: #ff6700;
+            box-shadow: 0 0 0 2px rgba(255, 103, 0, 0.1);
+            background-color: #fff;
+        }
+        
+        .search-btn {
+            position: absolute;
+            right: 10px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: none;
+            border: none;
+            color: #666;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .search-btn:hover {
+            color: #ff6700;
+        }
+        
+        .user-actions {
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+        }
+        
+        .user-actions a {
+            margin: 0 10px;
+            color: #333;
+            text-decoration: none;
+            position: relative;
+            transition: all 0.3s ease;
+        }
+        
+        .user-actions a:hover {
+            color: #ff6700;
+            transform: translateY(-2px);
+        }
+        
+        .cart-count {
+            background-color: #ff6700;
+            color: white;
+            font-size: 10px;
+            border-radius: 50%;
+            padding: 2px 6px;
+            position: absolute;
+            top: -8px;
+            right: -8px;
+            transition: all 0.3s ease;
+            font-weight: bold;
+            box-shadow: 0 2px 5px rgba(255, 103, 0, 0.3);
+        }
+        
+        .mini-cart {
+            position: absolute;
+            top: 100%;
+            right: 0;
+            width: 320px;
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.15);
+            padding: 15px;
+            opacity: 0;
+            visibility: hidden;
+            transform: translateY(10px);
+            transition: all 0.3s ease;
+            z-index: 1001;
+        }
+        
+        .mini-cart-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #eee;
+            margin-bottom: 10px;
+        }
+        
+        .mini-cart-title {
+            font-weight: 600;
+            color: #333;
+            font-size: 16px;
+        }
+        
+        .mini-cart-count {
+            background-color: #f5f5f5;
+            color: #ff6700;
+            border-radius: 15px;
+            padding: 2px 8px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+        
+        .mini-cart-items {
+            max-height: 300px;
+            overflow-y: auto;
+            margin-bottom: 10px;
+        }
+        
+        .mini-cart-item {
+            display: flex;
+            padding: 8px 0;
+            border-bottom: 1px solid #f5f5f5;
+        }
+        
+        .mini-cart-item-img {
+            width: 60px;
+            height: 60px;
+            border-radius: 5px;
+            background-color: #f9f9f9;
+            overflow: hidden;
+            margin-right: 10px;
+        }
+        
+        .mini-cart-item-img img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        
+        .mini-cart-item-info {
+            flex-grow: 1;
+        }
+        
+        .mini-cart-item-name {
+            font-size: 14px;
+            font-weight: 500;
+            margin-bottom: 2px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        
+        .mini-cart-item-price {
+            color: #ff6700;
+            font-weight: 600;
+            font-size: 14px;
+        }
+        
+        .mini-cart-item-quantity {
+            font-size: 12px;
+            color: #999;
+        }
+        
+        .mini-cart-footer {
+            border-top: 1px solid #eee;
+            padding-top: 10px;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .mini-cart-total {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+        
+        .mini-cart-total-label {
+            font-size: 14px;
+            color: #666;
+        }
+        
+        .mini-cart-total-price {
+            font-size: 16px;
+            font-weight: 600;
+            color: #ff6700;
+        }
+        
+        .mini-cart-buttons {
+            display: flex;
+            gap: 10px;
+        }
+        
+        .mini-cart-btn {
+            flex: 1;
+            padding: 8px;
+            border-radius: 5px;
+            text-align: center;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-decoration: none;
+        }
+        
+        .mini-cart-view-btn {
+            background-color: #f5f5f5;
+            color: #333;
+            border: none;
+        }
+        
+        .mini-cart-view-btn:hover {
+            background-color: #e5e5e5;
+            color: #333;
+        }
+        
+        .mini-cart-checkout-btn {
+            background-color: #ff6700;
+            color: white;
+            border: none;
+        }
+        
+        .mini-cart-checkout-btn:hover {
+            background-color: #f25600;
+        }
+        
+        .mini-cart-empty {
+            padding: 30px 0;
+            text-align: center;
+        }
+        
+        .mini-cart-empty i {
+            font-size: 40px;
+            color: #ddd;
+            margin-bottom: 10px;
+        }
+        
+        .mini-cart-empty p {
+            color: #999;
+            font-size: 14px;
+            margin-bottom: 15px;
+        }
+        
+        .cart-item:hover .mini-cart {
+            opacity: 1;
+            visibility: visible;
+            transform: translateY(0);
+        }
+        
+        .cart-wrapper {
+            position: relative;
+        }
+        
+        .cart-wrapper:hover .mini-cart {
+            opacity: 1;
+            visibility: visible;
+            transform: translateY(0);
+        }
+        
+        .mobile-toggle {
+            display: none;
+            background: none;
+            border: none;
+            color: #333;
+            font-size: 24px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .mobile-toggle:hover {
+            color: #ff6700;
+        }
+        
+        .banner {
+            background-image: url('images/shop-banner.jpg');
+            background-size: cover;
+            background-position: center;
+            height: 300px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            text-align: center;
+            position: relative;
+        }
+        
+        .banner::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.4);
+        }
+        
+        .banner-content {
+            position: relative;
+            z-index: 1;
+            max-width: 800px;
+            padding: 0 20px;
+        }
+        
+        .banner h1 {
+            font-size: 2.5rem;
+            margin-bottom: 20px;
+        }
+        
+        .banner p {
+            font-size: 1.2rem;
+            margin-bottom: 30px;
+        }
+        
+        .category-nav {
+            background-color: white;
+            padding: 15px 0;
+            margin-bottom: 30px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+            position: sticky;
+            top: 70px;
+            z-index: 900;
+        }
+        
+        .category-btn {
+            background: none;
+            border: none;
+            color: #333;
+            font-weight: 500;
+            padding: 8px 15px;
+            cursor: pointer;
+            border-radius: 20px;
+            transition: all 0.3s;
+        }
+        
+        .category-btn:hover {
+            background-color: #f5f5f5;
+            color: #ff6700;
+        }
+        
+        .category-btn.active {
+            background-color: #ff6700;
+            color: white;
+        }
+        
+        .product-card {
+            background: white;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            transition: transform 0.3s, box-shadow 0.3s;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .product-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+        
+        .product-img {
+            height: 200px;
+            background-color: #f9f9f9;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+        }
+        
+        .product-img img {
+            max-width: 100%;
+            max-height: 100%;
+            object-fit: cover;
+            transition: transform 0.3s;
+        }
+        
+        .product-card:hover .product-img img {
+            transform: scale(1.05);
+        }
+        
+        .product-info {
+            padding: 15px;
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .product-name {
+            font-weight: 600;
+            font-size: 16px;
+            margin-bottom: 10px;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+            height: 40px;
+        }
+        
+        .product-price {
+            color: #ff6700;
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 5px;
+        }
+        
+        .original-price {
+            text-decoration: line-through;
+            color: #999;
+            font-size: 14px;
+            margin-left: 5px;
+        }
+        
+        .product-actions {
+            margin-top: auto;
+            display: flex;
+        }
+        
+        .add-to-cart-btn {
+            flex: 1;
+            background-color: #ff6700;
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        
+        .add-to-cart-btn:hover {
+            background-color: #f25600;
+        }
+        
+        .view-details-btn {
+            background: none;
+            border: none;
+            color: #666;
+            margin-left: 10px;
+            cursor: pointer;
+        }
+        
+        .view-details-btn:hover {
+            color: #ff6700;
+        }
+        
+        .product-badge {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            background-color: #ff6700;
+            color: white;
+            padding: 3px 8px;
+            font-size: 12px;
+            border-radius: 3px;
+        }
+        
+        .product-badge.new {
+            background-color: #00a0e9;
+        }
+        
+        .pagination-container {
+            margin-top: 30px;
+            display: flex;
+            justify-content: center;
+        }
+        
+        .pagination {
+            display: flex;
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+        
+        .pagination li {
+            margin: 0 5px;
+        }
+        
+        .pagination a {
+            display: block;
+            padding: 5px 10px;
+            border-radius: 3px;
+            text-decoration: none;
+            color: #333;
+            background-color: white;
+        }
+        
+        .pagination a:hover {
+            background-color: #f5f5f5;
+        }
+        
+        .pagination a.active {
+            background-color: #ff6700;
+            color: white;
+        }
+        
+        .loading {
+            text-align: center;
+            padding: 30px;
+            font-size: 18px;
+            color: #666;
+        }
+        
+        .footer {
+            background-color: #333;
+            color: #aaa;
+            padding: 40px 0 20px;
+            margin-top: 50px;
+        }
+        
+        .footer h5 {
+            color: white;
+            margin-bottom: 15px;
+        }
+        
+        .footer-links a {
+            display: block;
+            color: #aaa;
+            margin-bottom: 8px;
+            text-decoration: none;
+        }
+        
+        .footer-links a:hover {
+            color: #ff6700;
+        }
+        
+        .footer-bottom {
+            border-top: 1px solid #444;
+            padding-top: 20px;
+            margin-top: 20px;
+            text-align: center;
+            font-size: 14px;
+        }
+        
+        /* 响应式调整 */
+        @media (max-width: 992px) {
+            .nav-container {
+                position: fixed;
+                top: 70px;
+                left: -100%;
+                width: 250px;
+                height: calc(100vh - 70px);
+                background-color: white;
+                flex-direction: column;
+                align-items: flex-start;
+                padding: 20px;
+                transition: all 0.3s ease;
+                box-shadow: 5px 0 15px rgba(0,0,0,0.1);
+                z-index: 999;
+            }
+            
+            .nav-container.active {
+                left: 0;
+            }
+            
+            .nav-link {
+                margin: 10px 0;
+                width: 100%;
+                padding: 10px 0;
+            }
+            
+            .mobile-toggle {
+                display: block;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- 头部导航 -->
+    <header class="header">
+        <div class="container">
+            <div class="row align-items-center">
+                <div class="col-lg-1 col-md-1 col-2 d-block d-lg-none text-end">
+                    <button class="mobile-toggle" id="mobileToggle">
+                        <i class="bi bi-list"></i>
+                    </button>
+                </div>
+                <div class="col-lg-7 col-md-8 col-sm-12">
+                    <nav class="nav-container d-lg-flex d-none" id="navContainer">
+                        <a href="index.html" class="nav-link">首页</a>
+                        <a href="shop.html" class="nav-link active">车品商城</a>
+                    </nav>
+                </div>
+                <div class="col-lg-3 col-md-7 col-sm-8 d-none d-lg-block">
+                    <div class="search-box">
+                        <input type="text" id="searchInput" class="search-input" placeholder="搜索商品">
+                        <button class="search-btn" id="searchBtn"><i class="bi bi-search"></i></button>
+                    </div>
+                </div>
+                <div class="col-lg-2 col-md-2 col-sm-4 col-4 text-end">
+                    <div class="user-actions">
+                        <div class="cart-wrapper" style="margin-right: 20px;">
+                            <a href="cart.html" class="position-relative" id="cartLink" title="购物车">
+                                <i class="bi bi-cart3 fs-5"></i>
+                                <span class="cart-count" id="cartCount">0</span>
+                            </a>
+                            <div class="mini-cart" id="miniCart">
+                                <!-- 迷你购物车内容将通过JS动态加载 -->
+                            </div>
+                        </div>
+                        <div class="dropdown-container">
+                            <a href="javascript:void(0)" id="loginLink" title="登录/注册">
+                                <i class="bi bi-person-circle fs-5"></i>
+                            </a>
+                            <div class="dropdown-menu user-dropdown">
+                                <a href="login.html" class="dropdown-item"><i class="bi bi-box-arrow-in-right me-2"></i>登录</a>
+                                <a href="register.html" class="dropdown-item"><i class="bi bi-person-plus me-2"></i>注册</a>
+                                <div class="dropdown-divider"></div>
+                                <a href="user-orders.html" class="dropdown-item"><i class="bi bi-bag me-2"></i>我的订单</a>
+                                <a href="user-profile.html" class="dropdown-item"><i class="bi bi-person-gear me-2"></i>个人设置</a>
+                                <a href="favorites.html" class="dropdown-item"><i class="bi bi-heart me-2"></i>我的收藏</a>
+                                <div class="dropdown-divider"></div>
+                                <a href="javascript:void(0)" class="dropdown-item text-danger" id="logoutBtn"><i class="bi bi-box-arrow-right me-2"></i>退出登录</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- 横幅 -->
+    <section class="banner">
+        <div class="banner-content">
+            <h1>小米 SU7 车品周边</h1>
+            <p>精选小米 SU7 原厂配件和周边产品，为您的爱车增添独特魅力</p>
+        </div>
+    </section>
+
+    <!-- 分类导航 -->
+    <section class="category-nav">
+        <div class="container">
+            <div class="d-flex justify-content-center justify-content-md-between flex-wrap">
+                <button class="category-btn active" data-category="all">全部商品</button>
+                <button class="category-btn" data-category="1">小米车品</button>
+                <button class="category-btn" data-category="2">车身饰品</button>
+                <button class="category-btn" data-category="3">车内用品</button>
+                <button class="category-btn" data-category="4">车载电子</button>
+                <button class="category-btn" data-category="5">车模模型</button>
+                <button class="category-btn" data-category="hot">热销商品</button>
+                <button class="category-btn" data-category="new">新品推荐</button>
+            </div>
+        </div>
+    </section>
+
+    <!-- 商品列表 -->
+    <section class="container py-4">
+        <div class="row" id="productList">
+            <!-- 商品将通过JS动态加载 -->
+            <div class="col-12">
+                <div class="loading">
+                    <i class="bi bi-arrow-repeat"></i> 正在加载商品...
+                </div>
+            </div>
+        </div>
+        
+        <!-- 分页 -->
+        <div class="pagination-container">
+            <ul class="pagination" id="pagination">
+                <!-- 分页按钮将通过JS动态加载 -->
+            </ul>
+        </div>
+    </section>
+
+    <!-- 页脚 -->
+    <footer class="footer">
+        <div class="container">
+            <div class="row">
+                <div class="col-md-4 col-6 mb-4">
+                    <h5>帮助中心</h5>
+                    <div class="footer-links">
+                        <a href="#">购物指南</a>
+                        <a href="#">支付方式</a>
+                        <a href="#">物流配送</a>
+                    </div>
+                </div>
+                <div class="col-md-4 col-6 mb-4">
+                    <h5>售后服务</h5>
+                    <div class="footer-links">
+                        <a href="#">退换货政策</a>
+                        <a href="#">退换货流程</a>
+                        <a href="#">常见问题</a>
+                    </div>
+                </div>
+                <div class="col-md-4 col-6 mb-4">
+                    <h5>关注我们</h5>
+                    <div class="footer-links">
+                        <a href="#">微博</a>
+                        <a href="#">微信公众号</a>
+                        <a href="#">小米社区</a>
+                    </div>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2024 小米 SU7 交付进度追踪. 保留所有权利.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // 检查用户登录状态
+            const isLoggedIn = localStorage.getItem('isLoggedIn') === 'true';
+            const userDropdown = document.querySelector('.user-dropdown');
+            
+            // 根据登录状态显示不同的下拉菜单项
+            if (isLoggedIn) {
+                // 隐藏登录和注册选项
+                userDropdown.querySelector('a[href="login.html"]').style.display = 'none';
+                userDropdown.querySelector('a[href="register.html"]').style.display = 'none';
+                // 显示已登录的用户选项
+                userDropdown.querySelector('a[href="user-orders.html"]').style.display = 'block';
+                userDropdown.querySelector('a[href="user-profile.html"]').style.display = 'block';
+                userDropdown.querySelector('a[href="favorites.html"]').style.display = 'block';
+                userDropdown.querySelector('#logoutBtn').style.display = 'block';
+            } else {
+                // 显示登录和注册选项
+                userDropdown.querySelector('a[href="login.html"]').style.display = 'block';
+                userDropdown.querySelector('a[href="register.html"]').style.display = 'block';
+                // 隐藏已登录的用户选项
+                userDropdown.querySelector('a[href="user-orders.html"]').style.display = 'none';
+                userDropdown.querySelector('a[href="user-profile.html"]').style.display = 'none';
+                userDropdown.querySelector('a[href="favorites.html"]').style.display = 'none';
+                userDropdown.querySelector('#logoutBtn').style.display = 'none';
+            }
+            
+            // 退出登录功能
+            document.getElementById('logoutBtn').addEventListener('click', function() {
+                localStorage.removeItem('isLoggedIn');
+                localStorage.removeItem('user');
+                localStorage.removeItem('token');
+                
+                // 显示退出提示
+                alert('您已成功退出登录');
+                
+                // 刷新页面
+                location.reload();
+            });
+            
+            // 加载购物车数量
+            const cartItems = JSON.parse(localStorage.getItem('cartItems')) || [];
+            document.getElementById('cartCount').textContent = cartItems.length;
+            
+            // 加载迷你购物车
+            loadMiniCart();
+            
+            // 导航栏滚动效果
+            window.addEventListener('scroll', function() {
+                const header = document.querySelector('.header');
+                if (window.scrollY > 50) {
+                    header.classList.add('scrolled');
+                } else {
+                    header.classList.remove('scrolled');
+                }
+            });
+
+            // 移动端菜单切换
+            document.getElementById('mobileToggle').addEventListener('click', function() {
+                const navContainer = document.getElementById('navContainer');
+                navContainer.classList.toggle('active');
+                navContainer.classList.toggle('d-none');
+                navContainer.classList.toggle('d-flex');
+                
+                const icon = this.querySelector('i');
+                if (icon.classList.contains('bi-list')) {
+                    icon.classList.remove('bi-list');
+                    icon.classList.add('bi-x-lg');
+                } else {
+                    icon.classList.remove('bi-x-lg');
+                    icon.classList.add('bi-list');
+                }
+            });
+            
+            // 搜索功能
+            document.getElementById('searchBtn').addEventListener('click', function() {
+                const searchValue = document.getElementById('searchInput').value.trim();
+                if (searchValue) {
+                    loadProducts({ search: searchValue });
+                }
+            });
+            
+            // 默认加载所有商品
+            loadProducts({});
+            
+            // 加载商品列表
+            function loadProducts(params) {
+                const productList = document.getElementById('productList');
+                
+                // 显示加载提示
+                productList.innerHTML = `
+                    <div class="col-12">
+                        <div class="loading">
+                            <i class="bi bi-arrow-repeat"></i> 正在加载商品...
+                        </div>
+                    </div>
+                `;
+                
+                // 模拟API请求延迟
+                setTimeout(() => {
+                    // 这里可以替换为真实的API调用
+                    const products = [
+                        {
+                            id: 1,
+                            name: '小米SU7车模 1:18',
+                            price: 699,
+                            originalPrice: 799,
+                            image: 'images/product1.jpg',
+                            category: '5',
+                            isNew: true,
+                            isHot: true
+                        },
+                        {
+                            id: 2,
+                            name: '小米SU7车载充电器',
+                            price: 199,
+                            originalPrice: null,
+                            image: 'images/product2.jpg',
+                            category: '4',
+                            isNew: false,
+                            isHot: true
+                        },
+                        {
+                            id: 3,
+                            name: '小米SU7车载香氛',
+                            price: 99,
+                            originalPrice: 129,
+                            image: 'images/product3.jpg',
+                            category: '3',
+                            isNew: false,
+                            isHot: false
+                        },
+                        {
+                            id: 4,
+                            name: '小米SU7钥匙扣',
+                            price: 69,
+                            originalPrice: null,
+                            image: 'images/product4.jpg',
+                            category: '2',
+                            isNew: false,
+                            isHot: true
+                        },
+                        {
+                            id: 5,
+                            name: '小米SU7撞色T恤',
+                            price: 129,
+                            originalPrice: 169,
+                            image: 'images/product5.jpg',
+                            category: '1',
+                            isNew: true,
+                            isHot: false
+                        },
+                        {
+                            id: 6,
+                            name: '小米SU7车载手机支架',
+                            price: 89,
+                            originalPrice: 109,
+                            image: 'images/product6.jpg',
+                            category: '4',
+                            isNew: false,
+                            isHot: false
+                        },
+                        {
+                            id: 7,
+                            name: '小米SU7车门防踢膜',
+                            price: 159,
+                            originalPrice: null,
+                            image: 'images/product7.jpg',
+                            category: '2',
+                            isNew: true,
+                            isHot: false
+                        },
+                        {
+                            id: 8,
+                            name: '小米SU7车载保温杯',
+                            price: 149,
+                            originalPrice: 179,
+                            image: 'images/product8.jpg',
+                            category: '3',
+                            isNew: false,
+                            isHot: true
+                        }
+                    ];
+                    
+                    // 如果有搜索关键词，过滤商品
+                    let filteredProducts = products;
+                    if (params.search) {
+                        filteredProducts = products.filter(product => 
+                            product.name.toLowerCase().includes(params.search.toLowerCase())
+                        );
+                    }
+                    
+                    // 清空商品列表
+                    productList.innerHTML = '';
+                    
+                    // 生成商品卡片
+                    if (filteredProducts.length === 0) {
+                        productList.innerHTML = `
+                            <div class="col-12 text-center py-5">
+                                <div class="empty-result">
+                                    <i class="bi bi-search fs-1 text-muted"></i>
+                                    <p class="mt-3 fs-5">未找到符合条件的商品</p>
+                                    <button class="btn btn-outline-primary mt-3" id="resetSearch">
+                                        查看全部商品
+                                    </button>
+                                </div>
+                            </div>
+                        `;
+                        
+                        document.getElementById('resetSearch').addEventListener('click', function() {
+                            document.getElementById('searchInput').value = '';
+                            loadProducts({});
+                        });
+                    } else {
+                        // 展示商品
+                        filteredProducts.forEach((product, index) => {
+                            const productCard = document.createElement('div');
+                            productCard.className = 'col-lg-3 col-md-4 col-sm-6 mb-4 product-item animate__animated animate__fadeIn';
+                            productCard.style.animationDelay = `${index * 0.1}s`;
+                            productCard.setAttribute('data-category', product.category);
+                            
+                            if (product.isHot) {
+                                productCard.setAttribute('data-hot', 'true');
+                            }
+                            
+                            if (product.isNew) {
+                                productCard.setAttribute('data-new', 'true');
+                            }
+                            
+                            productCard.innerHTML = `
+                                <div class="product-card">
+                                    <div class="product-img">
+                                        <img src="${product.image}" alt="${product.name}">
+                                        ${product.isNew ? '<span class="product-badge new">新品</span>' : ''}
+                                        ${product.isHot && !product.isNew ? '<span class="product-badge">热销</span>' : ''}
+                                    </div>
+                                    <div class="product-info">
+                                        <div class="product-name">${product.name}</div>
+                                        <div class="product-price">
+                                            ¥${product.price}
+                                            ${product.originalPrice ? `<span class="original-price">¥${product.originalPrice}</span>` : ''}
+                                        </div>
+                                        <div class="product-actions">
+                                            <button class="add-to-cart-btn" data-id="${product.id}">加入购物车</button>
+                                            <button class="view-details-btn" data-id="${product.id}"><i class="bi bi-info-circle"></i></button>
+                                        </div>
+                                    </div>
+                                </div>
+                            `;
+                            
+                            productList.appendChild(productCard);
+                        });
+                    }
+                    
+                    // 设置分页
+                    const pagination = document.getElementById('pagination');
+                    pagination.innerHTML = filteredProducts.length > 0 ? `
+                        <li><a href="#" class="active">1</a></li>
+                        <li><a href="#">2</a></li>
+                        <li><a href="#">3</a></li>
+                        <li><a href="#">4</a></li>
+                        <li><a href="#">5</a></li>
+                        <li><a href="#"><i class="bi bi-chevron-right"></i></a></li>
+                    ` : '';
+                    
+                    // 添加购物车按钮事件
+                    const addToCartButtons = document.querySelectorAll('.add-to-cart-btn');
+                    addToCartButtons.forEach(button => {
+                        button.addEventListener('click', function() {
+                            const productId = parseInt(this.getAttribute('data-id'));
+                            
+                            // 从本地存储获取购物车
+                            let cartItems = JSON.parse(localStorage.getItem('cartItems')) || [];
+                            
+                            // 查找当前商品
+                            const product = products.find(p => p.id === productId);
+                            if (!product) return;
+                            
+                            // 检查商品是否已在购物车
+                            const existingItem = cartItems.find(item => item.id === productId);
+                            
+                            if (existingItem) {
+                                existingItem.quantity += 1;
+                            } else {
+                                cartItems.push({
+                                    id: product.id,
+                                    name: product.name,
+                                    price: product.price,
+                                    image: product.image,
+                                    quantity: 1
+                                });
+                            }
+                            
+                            // 保存到本地存储
+                            localStorage.setItem('cartItems', JSON.stringify(cartItems));
+                            
+                            // 更新购物车数量显示
+                            document.getElementById('cartCount').textContent = cartItems.length;
+                            
+                            // 更新迷你购物车
+                            loadMiniCart();
+                            
+                            // 添加动画效果
+                            const cartCount = document.getElementById('cartCount');
+                            cartCount.classList.add('animate__animated', 'animate__bounce');
+                            setTimeout(() => {
+                                cartCount.classList.remove('animate__animated', 'animate__bounce');
+                            }, 1000);
+                            
+                            // 显示成功提示
+                            const successToast = document.createElement('div');
+                            successToast.className = 'position-fixed top-0 end-0 p-3';
+                            successToast.style.zIndex = '9999';
+                            successToast.innerHTML = `
+                                <div class="toast show align-items-center text-white bg-success border-0" role="alert" aria-live="assertive" aria-atomic="true">
+                                    <div class="d-flex">
+                                        <div class="toast-body">
+                                            <i class="bi bi-check-circle-fill me-2"></i> 已将 ${product.name} 添加到购物车！
+                                        </div>
+                                        <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
+                                    </div>
+                                </div>
+                            `;
+                            document.body.appendChild(successToast);
+                            
+                            setTimeout(() => {
+                                successToast.remove();
+                            }, 3000);
+                        });
+                    });
+                    
+                    // 查看详情按钮事件
+                    const viewDetailsButtons = document.querySelectorAll('.view-details-btn');
+                    viewDetailsButtons.forEach(button => {
+                        button.addEventListener('click', function() {
+                            const productId = this.getAttribute('data-id');
+                            // 跳转到商品详情页
+                            window.location.href = `product-detail.html?id=${productId}`;
+                        });
+                    });
+                    
+                    // 分类按钮事件
+                    const categoryButtons = document.querySelectorAll('.category-btn');
+                    categoryButtons.forEach(button => {
+                        button.addEventListener('click', function() {
+                            // 重置所有按钮样式
+                            categoryButtons.forEach(btn => btn.classList.remove('active'));
+                            
+                            // 设置当前按钮样式
+                            this.classList.add('active');
+                            
+                            // 获取分类
+                            const category = this.getAttribute('data-category');
+                            
+                            // 筛选商品
+                            const productItems = document.querySelectorAll('.product-item');
+                            productItems.forEach((item, index) => {
+                                // 先移除所有动画类
+                                item.classList.remove('animate__fadeIn', 'animate__fadeOut');
+                                
+                                if (category === 'all') {
+                                    setTimeout(() => {
+                                        item.style.display = 'block';
+                                        item.classList.add('animate__fadeIn');
+                                        item.style.animationDelay = `${index * 0.05}s`;
+                                    }, 10);
+                                } else if (category === 'hot') {
+                                    if (item.getAttribute('data-hot') === 'true') {
+                                        setTimeout(() => {
+                                            item.style.display = 'block';
+                                            item.classList.add('animate__fadeIn');
+                                            item.style.animationDelay = `${index * 0.05}s`;
+                                        }, 10);
+                                    } else {
+                                        item.classList.add('animate__fadeOut');
+                                        item.style.animationDelay = '0s';
+                                        setTimeout(() => {
+                                            item.style.display = 'none';
+                                        }, 500);
+                                    }
+                                } else if (category === 'new') {
+                                    if (item.getAttribute('data-new') === 'true') {
+                                        setTimeout(() => {
+                                            item.style.display = 'block';
+                                            item.classList.add('animate__fadeIn');
+                                            item.style.animationDelay = `${index * 0.05}s`;
+                                        }, 10);
+                                    } else {
+                                        item.classList.add('animate__fadeOut');
+                                        item.style.animationDelay = '0s';
+                                        setTimeout(() => {
+                                            item.style.display = 'none';
+                                        }, 500);
+                                    }
+                                } else {
+                                    if (item.getAttribute('data-category') === category) {
+                                        setTimeout(() => {
+                                            item.style.display = 'block';
+                                            item.classList.add('animate__fadeIn');
+                                            item.style.animationDelay = `${index * 0.05}s`;
+                                        }, 10);
+                                    } else {
+                                        item.classList.add('animate__fadeOut');
+                                        item.style.animationDelay = '0s';
+                                        setTimeout(() => {
+                                            item.style.display = 'none';
+                                        }, 500);
+                                    }
+                                }
+                            });
+                        });
+                    });
+                }, 1000);
+            }
+            
+            // 加载迷你购物车内容
+            function loadMiniCart() {
+                const miniCart = document.getElementById('miniCart');
+                const cartItems = JSON.parse(localStorage.getItem('cartItems')) || [];
+                
+                if (cartItems.length === 0) {
+                    miniCart.innerHTML = `
+                        <div class="mini-cart-empty">
+                            <i class="bi bi-cart-x"></i>
+                            <p>您的购物车还是空的</p>
+                            <a href="shop.html" class="btn btn-sm btn-outline-primary">开始购物</a>
+                        </div>
+                    `;
+                    return;
+                }
+                
+                let totalAmount = 0;
+                let miniCartItemsHTML = '';
+                
+                // 最多显示3个商品
+                const displayItems = cartItems.slice(0, 3);
+                
+                displayItems.forEach(item => {
+                    const itemTotal = item.price * item.quantity;
+                    totalAmount += itemTotal;
+                    
+                    miniCartItemsHTML += `
+                        <div class="mini-cart-item">
+                            <div class="mini-cart-item-img">
+                                <img src="${item.image}" alt="${item.name}">
+                            </div>
+                            <div class="mini-cart-item-info">
+                                <div class="mini-cart-item-name">${item.name}</div>
+                                <div class="mini-cart-item-price">¥${item.price.toFixed(2)}</div>
+                                <div class="mini-cart-item-quantity">x${item.quantity}</div>
+                            </div>
+                        </div>
+                    `;
+                });
+                
+                // 显示总计金额
+                const allItemsTotal = cartItems.reduce((total, item) => total + (item.price * item.quantity), 0);
+                
+                let moreItemsText = '';
+                if (cartItems.length > 3) {
+                    moreItemsText = `<div class="text-center text-muted my-2 small">还有 ${cartItems.length - 3} 件商品...</div>`;
+                }
+                
+                miniCart.innerHTML = `
+                    <div class="mini-cart-header">
+                        <span class="mini-cart-title">我的购物车</span>
+                        <span class="mini-cart-count">${cartItems.length}件商品</span>
+                    </div>
+                    <div class="mini-cart-items">
+                        ${miniCartItemsHTML}
+                        ${moreItemsText}
+                    </div>
+                    <div class="mini-cart-footer">
+                        <div class="mini-cart-total">
+                            <span class="mini-cart-total-label">合计:</span>
+                            <span class="mini-cart-total-price">¥${allItemsTotal.toFixed(2)}</span>
+                        </div>
+                        <div class="mini-cart-buttons">
+                            <a href="cart.html" class="mini-cart-btn mini-cart-view-btn">查看购物车</a>
+                            <a href="checkout.html" class="mini-cart-btn mini-cart-checkout-btn">去结算</a>
+                        </div>
+                    </div>
+                `;
+            }
+        });
+    </script>
+</body>
+</html> 

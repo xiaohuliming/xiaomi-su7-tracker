@@ -1,0 +1,663 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=1200">
+    <title>数据管理 - 小米 SU7 交付进度追踪</title>
+    <style>
+        /* 复用之前的样式，添加一些新的样式 */
+        body {
+            font-family: 'PingFang SC', 'Microsoft YaHei', sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+            color: #333;
+        }
+        
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+        }
+        
+        .logout-btn {
+            padding: 8px 16px;
+            background-color: #dc3545;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        
+        .logout-btn:hover {
+            background-color: #c82333;
+        }
+        
+        /* 上传区域样式 */
+        .upload-section {
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        /* 表单样式 */
+        #uploadForm {
+            margin-bottom: 20px;
+        }
+        
+        input[type="file"] {
+            padding: 8px;
+            margin-right: 10px;
+        }
+        
+        button {
+            padding: 8px 16px;
+            background-color: #ff6700;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        
+        button:hover {
+            background-color: #f25600;
+        }
+        
+        /* 消息提示样式 */
+        .message {
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 5px;
+            font-size: 14px;
+        }
+        
+        .success {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        
+        .error {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        
+        /* 预览表格样式 */
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+            background: white;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+        
+        .data-table th, .data-table td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+            font-size: 14px;
+        }
+        
+        .data-table th {
+            background-color: #ff6700;
+            color: white;
+            font-weight: normal;
+        }
+        
+        .data-table tr:nth-child(even) {
+            background-color: #f9f9f9;
+        }
+        
+        .data-table tr:hover {
+            background-color: #f5f5f5;
+        }
+        
+        /* 标题样式 */
+        h1, h2, h3 {
+            color: #333;
+            margin-bottom: 20px;
+        }
+        
+        h1 {
+            color: #ff6700;
+            font-size: 24px;
+            margin: 0;
+        }
+        
+        h2 {
+            font-size: 20px;
+            margin-top: 0;
+        }
+        
+        h3 {
+            font-size: 18px;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>数据管理后台</h1>
+        <button class="logout-btn" onclick="logout()">退出登录</button>
+    </div>
+
+    <!-- 用户上传数据审核区域 -->
+    <div class="review-section" style="background: white; border-radius: 10px; padding: 20px; margin-bottom: 20px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+        <h2>用户数据审核</h2>
+        <div id="userDataList" style="margin-top: 20px;">
+            <!-- 用户上传的数据将通过JavaScript动态添加 -->
+        </div>
+    </div>
+
+    <!-- 留言审核区域 -->
+    <div class="comments-section" style="background: white; border-radius: 10px; padding: 20px; margin-top: 20px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+        <h2>留言审核</h2>
+        <div id="commentsList" style="margin-top: 20px;">
+            <!-- 留言将通过JavaScript动态添加 -->
+        </div>
+    </div>
+
+    <div class="upload-section">
+        <h2>数据上传</h2>
+        <form id="uploadForm" enctype="multipart/form-data">
+            <input type="file" id="excelFile" accept=".xlsx,.xls" required>
+            <button type="submit">上传数据</button>
+        </form>
+        <div id="uploadMessage"></div>
+        
+        <div id="previewSection" style="display:none; margin-top: 20px;">
+            <h3>数据预览</h3>
+            <table class="data-table" id="previewTable">
+                <thead>
+                    <tr>
+                        <th>预单日期</th>
+                        <th>统计日期</th>
+                        <th>车型</th>
+                        <th>外观</th>
+                        <th>内饰</th>
+                        <th>省份</th>
+                        <th>ID</th>
+                    </tr>
+                </thead>
+                <tbody></tbody>
+            </table>
+        </div>
+    </div>
+
+    <script>
+        // 检查登录状态
+        function checkAuth() {
+            // 先从localStorage检查登录状态
+            const isLoggedIn = localStorage.getItem('isLoggedIn') === 'true';
+            const userInfo = JSON.parse(localStorage.getItem('user') || '{}');
+            
+            // 如果未登录或不是管理员，则重定向到登录页面
+            if (!isLoggedIn || !userInfo.is_admin) {
+                // 清除可能存在的错误数据
+                localStorage.removeItem('isLoggedIn');
+                localStorage.removeItem('user');
+                localStorage.removeItem('admin_token');
+                window.location.href = '/admin/login.html';
+                return;
+            }
+            
+            // 确保管理员token存在于localStorage
+            if (!localStorage.getItem('admin_token')) {
+                localStorage.setItem('admin_token', 'admin_token');
+            }
+        }
+
+        // 退出登录
+        async function logout() {
+            try {
+                // 清除本地存储的登录信息
+                localStorage.removeItem('isLoggedIn');
+                localStorage.removeItem('user');
+                
+                // 通知服务器退出登录
+                await fetch('/api/admin/logout');
+                
+                // 重定向到登录页面
+                window.location.href = '/admin/login.html';
+            } catch (error) {
+                console.error('退出失败:', error);
+                // 即使API调用失败，也强制清除本地登录状态并重定向
+                window.location.href = '/admin/login.html';
+            }
+        }
+
+        // 页面加载时检查登录状态
+        document.addEventListener('DOMContentLoaded', function() {
+            checkAuth();
+            loadUserData();
+            loadComments();
+        });
+
+        // 用之前的上传和预览相关代码
+        document.getElementById('uploadForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const formData = new FormData();
+            const fileInput = document.getElementById('excelFile');
+            
+            if (!fileInput.files || !fileInput.files[0]) {
+                alert('请选择要上传的文件');
+                return;
+            }
+            
+            formData.append('file', fileInput.files[0]);
+
+            const messageDiv = document.getElementById('uploadMessage');
+            messageDiv.className = 'message';
+            messageDiv.textContent = '正在上传...';
+
+            try {
+                const response = await fetch('/api/upload-data', {
+                    method: 'POST',
+                    body: formData
+                });
+                console.log('上传响应状态:', response.status);
+                const result = await response.json();
+                
+                if (response.ok) {
+                    messageDiv.className = 'message success';
+                    messageDiv.textContent = `成功导入 ${result.importedCount} 条数据`;
+                } else {
+                    messageDiv.className = 'message error';
+                    messageDiv.textContent = result.error || '上传失败';
+                }
+            } catch (error) {
+                console.error('上传出错:', error);
+                messageDiv.className = 'message error';
+                messageDiv.textContent = '上传过程中发生错误';
+            }
+        });
+
+        document.getElementById('excelFile').addEventListener('change', async (e) => {
+            const file = e.target.files[0];
+            if (file) {
+                const formData = new FormData();
+                formData.append('file', file);
+                
+                try {
+                    const response = await fetch('/api/preview-data', {
+                        method: 'POST',
+                        body: formData
+                    });
+                    const data = await response.json();
+                    
+                    // 显示预览
+                    const previewSection = document.getElementById('previewSection');
+                    const tbody = document.querySelector('#previewTable tbody');
+                    tbody.innerHTML = '';
+                    
+                    data.preview.slice(0, 5).forEach(row => {
+                        const tr = document.createElement('tr');
+                        tr.innerHTML = `
+                            <td>${row['0']}</td>
+                            <td>${row['1'].split(' ')[0]}</td>
+                            <td>MAX</td>
+                            <td>${row['2']}</td>
+                            <td>${row['3']}</td>
+                            <td>${row['4']}</td>
+                            <td>${row['5']}</td>
+                        `;
+                        tbody.appendChild(tr);
+                    });
+                    
+                    previewSection.style.display = 'block';
+                } catch (error) {
+                    console.error('预览出错:', error);
+                }
+            }
+        });
+
+        // 加载所有留言
+        async function loadComments() {
+            try {
+                // 检查token是否存在
+                const adminToken = localStorage.getItem('admin_token');
+                if (!adminToken) {
+                    console.error('管理员令牌不存在，尝试重新设置');
+                    localStorage.setItem('admin_token', 'admin_token');
+                }
+                
+                console.log('正在请求留言数据...');
+                const response = await fetch('/api/admin/comments', {
+                    headers: {
+                        'Authorization': `Bearer ${adminToken || 'admin_token'}`
+                    }
+                });
+                
+                if (!response.ok) {
+                    const errorText = await response.text();
+                    console.error(`服务器响应错误: ${response.status}`, errorText);
+                    throw new Error(`服务器响应错误: ${response.status}`);
+                }
+                
+                const responseText = await response.text();
+                console.log('收到服务器响应:', responseText);
+                
+                // 尝试解析JSON
+                let comments;
+                try {
+                    comments = JSON.parse(responseText);
+                } catch (e) {
+                    console.error('JSON解析错误:', e, '原始响应:', responseText);
+                    throw new Error('服务器返回的数据格式不是有效的JSON');
+                }
+                
+                // 检查返回的数据是否为数组
+                if (!Array.isArray(comments)) {
+                    console.error('返回的留言数据不是数组:', comments);
+                    throw new Error('返回的数据格式不正确');
+                }
+                
+                const commentsList = document.getElementById('commentsList');
+                if (comments.length === 0) {
+                    commentsList.innerHTML = '<p>暂无留言数据</p>';
+                    return;
+                }
+                
+                commentsList.innerHTML = comments.map(comment => `
+                    <div style="border: 1px solid #eee; padding: 15px; margin-bottom: 15px; border-radius: 5px;">
+                        <div style="margin-bottom: 10px;">
+                            <span style="font-weight: bold;">昵称：</span>${comment.nickname}
+                        </div>
+                        <div style="margin-bottom: 10px;">
+                            <span style="font-weight: bold;">内容：</span>${comment.content}
+                        </div>
+                        <div style="margin-bottom: 10px;">
+                            <span style="font-weight: bold;">时间：</span>${new Date(comment.created_at).toLocaleString()}
+                        </div>
+                        <div style="margin-bottom: 10px;">
+                            <span style="font-weight: bold;">状态：</span>
+                            <span style="color: ${comment.status === 'approved' ? 'green' : comment.status === 'rejected' ? 'red' : 'orange'}">
+                                ${comment.status === 'approved' ? '已通过' : comment.status === 'rejected' ? '已拒绝' : '待审核'}
+                            </span>
+                        </div>
+                        <div style="display: flex; gap: 10px;">
+                            <button onclick="reviewComment(${comment.id}, 'approved')"
+                                    style="background: #28a745; color: white; border: none; padding: 5px 10px; border-radius: 3px; cursor: pointer;">
+                                通过
+                            </button>
+                            <button onclick="reviewComment(${comment.id}, 'rejected')"
+                                    style="background: #dc3545; color: white; border: none; padding: 5px 10px; border-radius: 3px; cursor: pointer;">
+                                拒绝
+                            </button>
+                        </div>
+                        <!-- 回复列表 -->
+                        <div style="margin-top: 15px; padding-left: 20px; border-left: 2px solid #eee;">
+                            <h4 style="margin-bottom: 10px;">回复列表：</h4>
+                            ${comment.replies ? comment.replies.map(reply => `
+                                <div style="margin-bottom: 10px; padding: 10px; background: #f8f9fa; border-radius: 4px;">
+                                    <div><span style="font-weight: bold;">回复者：</span>${reply.nickname}</div>
+                                    <div><span style="font-weight: bold;">内容：</span>${reply.content}</div>
+                                    <div><span style="font-weight: bold;">时间：</span>${new Date(reply.created_at).toLocaleString()}</div>
+                                    <div>
+                                        <span style="font-weight: bold;">状态：</span>
+                                        <span style="color: ${reply.status === 'approved' ? 'green' : reply.status === 'rejected' ? 'red' : 'orange'}">
+                                            ${reply.status === 'approved' ? '已通过' : reply.status === 'rejected' ? '已拒绝' : '待审核'}
+                                        </span>
+                                    </div>
+                                    <div style="margin-top: 5px;">
+                                        <button onclick="reviewReply(${reply.id}, 'approved')"
+                                                style="background: #28a745; color: white; border: none; padding: 3px 8px; border-radius: 3px; cursor: pointer; margin-right: 5px;">
+                                            通过
+                                        </button>
+                                        <button onclick="reviewReply(${reply.id}, 'rejected')"
+                                                style="background: #dc3545; color: white; border: none; padding: 3px 8px; border-radius: 3px; cursor: pointer;">
+                                            拒绝
+                                        </button>
+                                    </div>
+                                </div>
+                            `).join('') : '暂无回复'}
+                        </div>
+                    </div>
+                `).join('');
+            } catch (error) {
+                console.error('加载留言失败:', error);
+                document.getElementById('commentsList').innerHTML = `
+                    <div class="message error">
+                        加载留言失败: ${error.message}<br>
+                        请确保服务器已启动并且API路由正确配置。
+                    </div>
+                `;
+            }
+        }
+        
+        // 审核留言
+        async function reviewComment(id, status) {
+            try {
+                const response = await fetch('/api/admin/comments/review', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': 'Bearer admin_token'
+                    },
+                    body: JSON.stringify({ id, status })
+                });
+                
+                if (!response.ok) {
+                    const errorData = await response.json().catch(() => ({}));
+                    throw new Error(errorData.error || `审核失败，状态码：${response.status}`);
+                }
+                
+                alert('审核成功');
+                loadComments();
+            } catch (error) {
+                console.error('审核留言失败:', error);
+                alert(`审核失败：${error.message}`);
+            }
+        }
+        
+        // 审核回复
+        async function reviewReply(id, status) {
+            try {
+                const response = await fetch('/api/admin/replies/review', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': 'Bearer admin_token'
+                    },
+                    body: JSON.stringify({ id, status })
+                });
+                
+                if (!response.ok) {
+                    const errorData = await response.json().catch(() => ({}));
+                    throw new Error(errorData.error || `审核失败，状态码：${response.status}`);
+                }
+                
+                alert('审核成功');
+                loadComments();
+            } catch (error) {
+                console.error('审核回复失败:', error);
+                alert(`审核失败：${error.message}`);
+            }
+        }
+        
+        // 加载用户上传的数据
+        async function loadUserData() {
+            try {
+                // 由于API暂时不可用，显示静态测试数据
+                console.log('API不可用，显示测试数据');
+                
+                const userDataList = document.getElementById('userDataList');
+                userDataList.innerHTML = `
+                    <div class="message">
+                        
+                    </div>
+                    <div style="border: 1px solid #eee; padding: 15px; margin-bottom: 15px; border-radius: 5px;">
+                        <div style="margin-bottom: 10px;">
+                            <span style="font-weight: bold;">用户ID：</span>1
+                        </div>
+                        <div style="margin-bottom: 10px;">
+                            <span style="font-weight: bold;">订单日期：</span>2024-12-01
+                        </div>
+                        <div style="margin-bottom: 10px;">
+                            <span style="font-weight: bold;">交付日期：</span>2025-02-15
+                        </div>
+                        <div style="margin-bottom: 10px;">
+                            <span style="font-weight: bold;">车型：</span>MAX
+                        </div>
+                        <div style="margin-bottom: 10px;">
+                            <span style="font-weight: bold;">外观：</span>青山绿
+                        </div>
+                        <div style="margin-bottom: 10px;">
+                            <span style="font-weight: bold;">内饰：</span>灰色
+                        </div>
+                        <div style="margin-bottom: 10px;">
+                            <span style="font-weight: bold;">省份：</span>北京
+                        </div>
+                        <div style="margin-bottom: 10px;">
+                            <span style="font-weight: bold;">订单ID：</span>SU7-12345
+                        </div>
+                        <div style="margin-bottom: 10px;">
+                            <span style="font-weight: bold;">状态：</span>
+                            <span style="color: orange">待审核</span>
+                        </div>
+                        <div style="display: flex; gap: 10px;">
+                            <button onclick="alert('测试数据，操作不可用')"
+                                    style="background: #28a745; color: white; border: none; padding: 5px 10px; border-radius: 3px; cursor: pointer;">
+                                通过
+                            </button>
+                            <button onclick="alert('测试数据，操作不可用')"
+                                    style="background: #dc3545; color: white; border: none; padding: 5px 10px; border-radius: 3px; cursor: pointer;">
+                                拒绝
+                            </button>
+                        </div>
+                    </div>
+                `;
+                
+                return; // 不继续执行API请求
+                
+                /* 以下代码暂时不执行，等API修复后恢复
+                // 检查token是否存在
+                const adminToken = localStorage.getItem('admin_token');
+                if (!adminToken) {
+                    console.error('管理员令牌不存在，尝试重新设置');
+                    localStorage.setItem('admin_token', 'admin_token');
+                }
+                
+                console.log('正在请求用户数据...');
+                const response = await fetch('/api/admin/user-data', {
+                    headers: {
+                        'Authorization': `Bearer ${adminToken || 'admin_token'}`
+                    }
+                });
+                
+                if (!response.ok) {
+                    const errorText = await response.text();
+                    console.error(`服务器响应错误: ${response.status}`, errorText);
+                    throw new Error(`服务器响应错误: ${response.status}`);
+                }
+                
+                const responseText = await response.text();
+                console.log('收到服务器响应:', responseText);
+                
+                // 尝试解析JSON
+                let data;
+                try {
+                    data = JSON.parse(responseText);
+                } catch (e) {
+                    console.error('JSON解析错误:', e, '原始响应:', responseText);
+                    throw new Error('服务器返回的数据格式不是有效的JSON');
+                }
+                
+                // 检查返回的数据是否为数组
+                if (!Array.isArray(data)) {
+                    console.error('返回的用户数据不是数组:', data);
+                    throw new Error('返回的数据格式不正确');
+                }
+                
+                if (data.length === 0) {
+                    userDataList.innerHTML = '<p>暂无用户上传数据</p>';
+                    return;
+                }
+                
+                userDataList.innerHTML = data.map(record => `
+                    <div style="border: 1px solid #eee; padding: 15px; margin-bottom: 15px; border-radius: 5px;">
+                        <div style="margin-bottom: 10px;">
+                            <span style="font-weight: bold;">用户ID：</span>${record.user_id}
+                        </div>
+                        <div style="margin-bottom: 10px;">
+                            <span style="font-weight: bold;">订单日期：</span>${record.order_date}
+                        </div>
+                        <div style="margin-bottom: 10px;">
+                            <span style="font-weight: bold;">交付日期：</span>${record.delivery_date}
+                        </div>
+                        <div style="margin-bottom: 10px;">
+                            <span style="font-weight: bold;">车型：</span>${record.model}
+                        </div>
+                        <div style="margin-bottom: 10px;">
+                            <span style="font-weight: bold;">外观：</span>${record.exterior_color}
+                        </div>
+                        <div style="margin-bottom: 10px;">
+                            <span style="font-weight: bold;">内饰：</span>${record.interior_color}
+                        </div>
+                        <div style="margin-bottom: 10px;">
+                            <span style="font-weight: bold;">省份：</span>${record.province}
+                        </div>
+                        <div style="margin-bottom: 10px;">
+                            <span style="font-weight: bold;">订单ID：</span>${record.order_id}
+                        </div>
+                        <div style="margin-bottom: 10px;">
+                            <span style="font-weight: bold;">状态：</span>
+                            <span style="color: ${record.status === 'approved' ? 'green' : record.status === 'rejected' ? 'red' : 'orange'}">
+                                ${record.status === 'approved' ? '已通过' : record.status === 'rejected' ? '已拒绝' : '待审核'}
+                            </span>
+                        </div>
+                        <div style="display: flex; gap: 10px;">
+                            <button onclick="reviewUserData(${record.id}, 'approved')"
+                                    style="background: #28a745; color: white; border: none; padding: 5px 10px; border-radius: 3px; cursor: pointer;">
+                                通过
+                            </button>
+                            <button onclick="reviewUserData(${record.id}, 'rejected')"
+                                    style="background: #dc3545; color: white; border: none; padding: 5px 10px; border-radius: 3px; cursor: pointer;">
+                                拒绝
+                            </button>
+                        </div>
+                    </div>
+                `).join('');
+                */
+            } catch (error) {
+                console.error('加载用户数据失败:', error);
+                document.getElementById('userDataList').innerHTML = `
+                    <div class="message error">
+                        加载用户数据失败: ${error.message}<br>
+                        请确保服务器已启动并且API路由正确配置。
+                    </div>
+                `;
+            }
+        }
+        
+        // 审核用户数据
+        async function reviewUserData(id, status) {
+            try {
+                const response = await fetch('/api/admin/review-user-data', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': 'Bearer admin_token'
+                    },
+                    body: JSON.stringify({ recordId: id, status })
+                });
+                
+                if (!response.ok) {
+                    const errorData = await response.json().catch(() => ({}));
+                    throw new Error(errorData.error || `审核失败，状态码：${response.status}`);
+                }
+                
+                alert('审核成功');
+                loadUserData();
+            } catch (error) {
+                console.error('审核用户数据失败:', error);
+                alert(`审核失败：${error.message}`);
+            }
+        }
+    </script>
+</body>
+</html> 

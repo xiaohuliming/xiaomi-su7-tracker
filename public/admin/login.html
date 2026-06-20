@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=1200">
+    <title>管理员登录 - 小米 SU7 交付进度追踪</title>
+    <style>
+        body {
+            font-family: 'PingFang SC', 'Microsoft YaHei', sans-serif;
+            background-color: #f5f5f5;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+        
+        .login-container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            width: 300px;
+        }
+        
+        h1 {
+            color: #ff6700;
+            text-align: center;
+            margin-bottom: 30px;
+            font-size: 1.5em;
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 5px;
+            color: #333;
+        }
+        
+        input {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            box-sizing: border-box;
+        }
+        
+        button {
+            width: 100%;
+            padding: 10px;
+            background-color: #ff6700;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        
+        button:hover {
+            background-color: #f25600;
+        }
+        
+        .error-message {
+            color: #dc3545;
+            margin-top: 10px;
+            text-align: center;
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="login-container">
+        <h1>管理员登录</h1>
+        <form id="loginForm">
+            <div class="form-group">
+                <label for="username">用户名</label>
+                <input type="text" id="username" required>
+            </div>
+            <div class="form-group">
+                <label for="password">密码</label>
+                <input type="password" id="password" required>
+            </div>
+            <button type="submit">登录</button>
+            <div id="errorMessage" class="error-message"></div>
+        </form>
+    </div>
+
+    <script>
+        // 页面加载时检查管理员登录状态
+        document.addEventListener('DOMContentLoaded', function() {
+            checkAdminLoginStatus();
+        });
+        
+        // 检查管理员登录状态
+        function checkAdminLoginStatus() {
+            const isLoggedIn = localStorage.getItem('isLoggedIn') === 'true';
+            if (isLoggedIn) {
+                // 获取用户信息
+                const userInfo = JSON.parse(localStorage.getItem('user') || '{}');
+                
+                // 如果是管理员则直接跳转到管理后台
+                if (userInfo.is_admin) {
+                    window.location.href = '/admin/dashboard.html';
+                }
+            }
+        }
+        
+        document.getElementById('loginForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+            
+            try {
+                const response = await fetch('/api/admin/login', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ username, password })
+                });
+                
+                if (response.ok) {
+                    // 获取登录结果和用户信息
+                    const data = await response.json();
+                    
+                    // 保存登录状态和用户信息到localStorage
+                    localStorage.setItem('isLoggedIn', 'true');
+                    localStorage.setItem('user', JSON.stringify({
+                        username: username,
+                        is_admin: true,
+                        ...data.user
+                    }));
+                    
+                    // 设置管理员token
+                    localStorage.setItem('admin_token', 'admin_token');
+                    
+                    // 跳转到管理后台
+                    window.location.href = '/admin/dashboard.html';
+                } else {
+                    const error = await response.json();
+                    document.getElementById('errorMessage').textContent = error.message || '登录失败';
+                    document.getElementById('errorMessage').style.display = 'block';
+                }
+            } catch (error) {
+                console.error('登录出错:', error);
+                document.getElementById('errorMessage').textContent = '登录过程中发生错误';
+                document.getElementById('errorMessage').style.display = 'block';
+            }
+        });
+    </script>
+</body>
+</html> 

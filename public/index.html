@@ -1,0 +1,1355 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=1200">
+    <title>小米 SU7 交付进度追踪</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary-color: #ff6700;
+            --primary-gradient: linear-gradient(135deg, #ff6700 0%, #ff8533 100%);
+            --secondary-color: #1a1a1a;
+            --accent-color: #ff8533;
+            --background-color: #f8f9fa;
+            --card-background: #ffffff;
+            --text-primary: #2c3e50;
+            --text-secondary: #666666;
+            --border-radius-lg: 20px;
+            --border-radius-md: 12px;
+            --border-radius-sm: 8px;
+            --box-shadow: 0 10px 20px rgba(0,0,0,0.05);
+            --box-shadow-hover: 0 15px 30px rgba(0,0,0,0.1);
+            --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'PingFang SC', 'Microsoft YaHei', sans-serif;
+            background: var(--background-color);
+            color: var(--text-primary);
+            line-height: 1.6;
+            width: 1200px;
+            min-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            overflow-x: hidden;
+        }
+
+        .container {
+            width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+
+        .navbar {
+            background: var(--card-background);
+            padding: 1rem 2rem;
+            box-shadow: var(--box-shadow);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            border-radius: var(--border-radius-lg);
+            margin-bottom: 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .navbar-nav {
+            display: flex;
+            gap: 20px;
+            align-items: center;
+        }
+        
+        .navbar-brand {
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: var(--primary-color);
+            text-decoration: none;
+        }
+        
+        .nav-link {
+            color: var(--text-secondary);
+            text-decoration: none;
+            padding: 5px 10px;
+            border-radius: var(--border-radius-sm);
+            transition: var(--transition);
+        }
+        
+        .nav-link:hover {
+            color: var(--primary-color);
+            background: rgba(255, 103, 0, 0.05);
+        }
+        
+        .nav-link.active {
+            color: var(--primary-color);
+            font-weight: 500;
+        }
+        
+        .user-actions {
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+        }
+        
+        .user-actions a {
+            color: var(--text-secondary);
+            text-decoration: none;
+            font-size: 1.1rem;
+            transition: var(--transition);
+        }
+        
+        .user-actions a:hover {
+            color: var(--primary-color);
+        }
+
+        /* 联系方式样式 */
+        .contact-info {
+            background: var(--card-background);
+            padding: 1.5rem;
+            text-align: center;
+            margin-bottom: 2rem;
+            border-radius: var(--border-radius-lg);
+            box-shadow: var(--box-shadow);
+            transition: var(--transition);
+        }
+
+        .contact-info:hover {
+            transform: translateY(-5px);
+            box-shadow: var(--box-shadow-hover);
+        }
+        
+        .contact-info span {
+            display: inline-flex;
+            align-items: center;
+            margin: 0.5rem 1rem;
+            color: var(--text-secondary);
+            padding: 0.5rem 1rem;
+            border-radius: var(--border-radius-sm);
+            background: rgba(255, 103, 0, 0.05);
+            transition: var(--transition);
+        }
+        
+        .contact-info span:hover {
+            background: rgba(255, 103, 0, 0.1);
+            transform: translateY(-2px);
+        }
+        
+        .contact-info i {
+            color: var(--primary-color);
+            margin-right: 0.5rem;
+        }
+
+        /* 标题样式 */
+        h1 {
+            background: var(--primary-gradient);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            text-align: center;
+            margin-bottom: 2rem;
+            font-size: 2.5rem;
+            font-weight: 700;
+        }
+        
+        h2 {
+            color: var(--text-primary);
+            margin: 1.5rem 0 1rem;
+            font-size: 1.5rem;
+            font-weight: 600;
+        }
+
+        /* 卡片样式 */
+        .card {
+            background: var(--card-background);
+            border-radius: var(--border-radius-lg);
+            padding: 2rem;
+            margin-bottom: 2rem;
+            box-shadow: var(--box-shadow);
+            transition: var(--transition);
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: var(--box-shadow-hover);
+        }
+
+        /* 输入控件样式 */
+        .input-group {
+            display: flex;
+            align-items: flex-end;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+            justify-content: space-between;
+        }
+
+        .input-field {
+            position: relative;
+            flex: 1;
+            width: 300px;
+        }
+
+        .input-field label {
+            display: block;
+            margin-bottom: 8px;
+            color: var(--text-secondary);
+        }
+
+        input[type="date"], 
+        select {
+            width: 100%;
+            padding: 0.8rem 0.5rem;
+            border: 2px solid #eee;
+            border-radius: var(--border-radius-sm);
+            font-size: 1rem;
+            transition: var(--transition);
+            background: white;
+            height: 42px;
+            padding-right: 25px;
+        }
+
+        select {
+            appearance: none;
+            -webkit-appearance: none;
+            -moz-appearance: none;
+            font-size: 0.95rem;
+            width: 100%;
+            position: relative;
+            z-index: 1;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23666' d='M6 8.825L1.175 4 2.238 2.938 6 6.7l3.763-3.762L10.825 4z'/%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 5px center;
+            background-size: 12px;
+        }
+
+        select option {
+            padding: 8px;
+            font-size: 0.95rem;
+            width: 100%;
+            box-sizing: border-box;
+        }
+
+        input[type="date"]:focus,
+        select:focus {
+            border-color: var(--primary-color);
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(255,103,0,0.1);
+        }
+
+        button {
+            background: var(--primary-gradient);
+            color: white;
+            border: none;
+            padding: 0 2rem;
+            height: 42px;
+            border-radius: var(--border-radius-sm);
+            cursor: pointer;
+            font-weight: 600;
+            transition: var(--transition);
+        }
+
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(255,103,0,0.3);
+        }
+
+        /* 进度条样式 */
+        .progress-bar {
+            height: 10px;
+            background: #eee;
+            border-radius: 5px;
+            overflow: hidden;
+            margin: 1rem 0;
+        }
+        
+        .progress {
+            height: 100%;
+            background: var(--primary-gradient);
+            transition: width 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        /* 统计信息样式 */
+        .statistics {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1.5rem;
+            margin: 2rem 0;
+        }
+        
+        .statistics div {
+            background: var(--card-background);
+            padding: 1.5rem;
+            border-radius: var(--border-radius-md);
+            text-align: center;
+            transition: var(--transition);
+        }
+        
+        .statistics div:hover {
+            transform: translateY(-5px);
+            box-shadow: var(--box-shadow-hover);
+        }
+
+        /* 图表容器 */
+        .charts-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 580px);
+            gap: 2rem;
+            margin: 2rem 0;
+        }
+        
+        .chart-container {
+            background: var(--card-background);
+            border-radius: var(--border-radius-lg);
+            padding: 2rem;
+            box-shadow: var(--box-shadow);
+            transition: var(--transition);
+            height: 400px;
+        }
+
+        .chart-container:hover {
+            transform: translateY(-5px);
+            box-shadow: var(--box-shadow-hover);
+        }
+
+        /* 表格样式 */
+        .table-container {
+            overflow-x: auto;
+            margin: 2rem 0;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background: var(--card-background);
+            border-radius: var(--border-radius-md);
+            overflow: hidden;
+        }
+
+        th, td {
+            padding: 1rem;
+            text-align: left;
+            border-bottom: 1px solid #eee;
+        }
+
+        th {
+            background: var(--primary-gradient);
+            color: white;
+            font-weight: 500;
+        }
+
+        tr:hover {
+            background: rgba(255,103,0,0.05);
+        }
+
+        /* 动画效果 */
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .animate-fade-in {
+            animation: fadeIn 0.6s ease-out;
+        }
+
+        /* 加载动画 */
+        .loading {
+            display: inline-block;
+            margin-left: 10px;
+            color: white;
+        }
+
+        .loading::after {
+            content: '';
+            display: inline-block;
+            width: 12px;
+            height: 12px;
+            border: 2px solid white;
+            border-radius: 50%;
+            border-top-color: transparent;
+            animation: spin 1s linear infinite;
+            margin-left: 5px;
+        }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .delivery-section {
+            margin-bottom: 30px;
+        }
+
+        /* 用户上传数据区域 */
+        .upload-section {
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+            margin: 20px 0;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .upload-section h3 {
+            color: #ff6700;
+            margin-bottom: 15px;
+        }
+
+        .upload-form {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+
+        .upload-hint {
+            font-size: 14px;
+            color: #666;
+            margin-top: 10px;
+        }
+
+        .points-info {
+            background: #fff8e1;
+            border-left: 4px solid #ffc107;
+            padding: 10px 15px;
+            margin-top: 15px;
+            font-size: 14px;
+            color: #856404;
+        }
+
+        /* 用户头像下拉菜单 */
+        .user-dropdown {
+            position: relative;
+            display: inline-block;
+        }
+
+        .user-dropdown-menu {
+            position: absolute;
+            top: 120%;
+            right: 0;
+            background: white;
+            min-width: 150px;
+            border-radius: 8px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            padding: 10px 0;
+            z-index: 1000;
+            opacity: 0;
+            visibility: hidden;
+            transform: translateY(10px);
+            transition: all 0.3s ease;
+        }
+
+        .user-dropdown:hover .user-dropdown-menu {
+            opacity: 1;
+            visibility: visible;
+            transform: translateY(0);
+        }
+
+        .user-dropdown-item {
+            display: block;
+            padding: 8px 15px;
+            color: var(--text-primary);
+            font-size: 14px;
+            text-decoration: none;
+            transition: all 0.2s ease;
+            text-align: left;
+            white-space: nowrap;
+        }
+
+        .user-dropdown-item:hover {
+            background: rgba(255, 103, 0, 0.05);
+            color: var(--primary-color);
+        }
+
+        .user-dropdown-divider {
+            height: 1px;
+            background: #eee;
+            margin: 8px 0;
+        }
+
+        .user-dropdown-username {
+            font-weight: 600;
+            color: var(--primary-color);
+        }
+
+        .user-dropdown-logout {
+            color: #dc3545;
+        }
+
+        .user-dropdown-logout:hover {
+            background: rgba(220, 53, 69, 0.05);
+            color: #dc3545;
+        }
+
+    </style>
+</head>
+<body>
+    <nav class="navbar">
+        <div class="navbar-nav">
+            <a href="index.html" class="navbar-brand">小米SU7交付追踪</a>
+            <a href="index.html" class="nav-link active">首页</a>
+            <a href="shop.html" class="nav-link">车品商城</a>
+            </div>
+        <div class="user-actions">
+            <a href="cart.html" title="购物车" style="margin-right: 15px;"><i class="fas fa-shopping-cart"></i></a>
+            <div class="user-dropdown" id="userDropdown">
+                <a href="javascript:void(0)" id="loginLink" title="登录/注册">
+                    <i class="fas fa-user"></i>
+                </a>
+                <div class="user-dropdown-menu">
+                    <!-- 登录前显示 -->
+                    <div id="beforeLogin">
+                        <a href="login.html" class="user-dropdown-item">
+                            <i class="fas fa-sign-in-alt mr-2"></i> 登录
+                        </a>
+                        <a href="register.html" class="user-dropdown-item">
+                            <i class="fas fa-user-plus mr-2"></i> 注册
+                        </a>
+                    </div>
+                    <!-- 登录后显示 -->
+                    <div id="afterLogin" style="display:none;">
+                        <div class="user-dropdown-item user-dropdown-username" id="usernameDisplay">
+                            <i class="fas fa-user mr-2"></i> <span id="username">用户名</span>
+                        </div>
+                        <div class="user-dropdown-divider"></div>
+                        <a href="user-center.html" class="user-dropdown-item">
+                            <i class="fas fa-user-cog mr-2"></i> 个人中心
+                        </a>
+                        <a href="favorites.html" class="user-dropdown-item">
+                            <i class="fas fa-heart mr-2"></i> 我的收藏
+                        </a>
+                        <a href="javascript:void(0)" class="user-dropdown-item user-dropdown-logout" onclick="logout()">
+                            <i class="fas fa-sign-out-alt mr-2"></i> 退出登录
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <div class="contact-info animate-fade-in">
+        <div style="display: flex; justify-content: center; flex-wrap: wrap; gap: 1.5rem; margin-bottom: 1rem;">
+            <span>
+                <i class="fas fa-code"></i>
+                作者：@F0Xy
+            </span>
+            <span>
+                <i class="fas fa-database"></i>
+                数据：@小米SU7-阿祖
+            </span>
+            <span>
+                <i class="fab fa-weixin"></i>
+                微信：TiTiPenguin820
+            </span>
+            <span>
+                <i class="fab fa-qq"></i>
+                QQ：1622057367
+            </span>
+            <span>
+                <i class="fas fa-heart"></i>
+                小红书：1073018147 | 94142309641
+            </span>
+        </div>
+        <div style="text-align: center; color: var(--text-secondary); font-size: 0.9rem;">
+            <i class="fas fa-info-circle"></i>
+            数据仅供参考，实际交付时间以官方为准
+        </div>
+    </div>
+
+    <h1 class="animate-fade-in">小米 SU7 交付进度追踪器</h1>
+    
+    <div class="card animate-fade-in">
+        <h2>订单信息</h2>
+        <div class="input-group">
+            <div class="input-field">
+                <label>订单日期</label>
+                <input type="date" id="orderDate">
+            </div>
+            <div class="input-field">
+                <label>省份</label>
+                <select id="province">
+                    <option value="">选择省份</option>
+                </select>
+            </div>
+            <div class="input-field">
+                <label>车型</label>
+                <select id="modelType">
+                    <option value="">选择车型</option>
+                    <option value="标准">标准</option>
+                    <option value="PRO">PRO</option>
+                    <option value="MAX">MAX</option>
+                </select>
+            </div>
+            <div class="input-field">
+                <label>&nbsp;</label>
+                <button onclick="calculateProgress()">
+                    计算进度
+                    <span id="loadingIndicator" class="loading" style="display: none;"></span>
+                </button>
+            </div>
+        </div>
+
+        <div class="progress-container">
+            <h3>预计交付进度</h3>
+            <div class="progress-bar">
+                <div class="progress" id="progressBar" style="width: 0%"></div>
+            </div>
+            <div style="display: flex; justify-content: space-between; margin-top: 1rem;">
+                <span id="progressText">0%</span>
+                <span id="estimatedDeliveryDate" style="color: var(--primary-color); font-weight: 600;">预计交付日期(Beta2.0): -</span>
+            </div>
+            <div style="background: rgba(255,103,0,0.05); padding: 1rem; border-radius: var(--border-radius-sm); margin-top: 1rem;">
+                <p id="confidenceText" style="margin-bottom: 0.5rem;"></p>
+                <p id="trendText" style="margin-bottom: 0.5rem;"></p>
+                <p id="recentDeliveryText"></p>
+            </div>
+        </div>
+    </div>
+
+    <div class="statistics animate-fade-in">
+        <div>
+            <div style="color: var(--text-secondary); font-size: 0.9rem;">平均等待天数</div>
+            <div style="font-size: 2rem; font-weight: 700; color: var(--primary-color); margin: 0.5rem 0;" id="avgWaitDays">-</div>
+        </div>
+        <div>
+            <div style="color: var(--text-secondary); font-size: 0.9rem;">最短等待天数</div>
+            <div style="font-size: 2rem; font-weight: 700; color: var(--primary-color); margin: 0.5rem 0;" id="minWaitDays">-</div>
+        </div>
+        <div>
+            <div style="color: var(--text-secondary); font-size: 0.9rem;">最长等待天数</div>
+            <div style="font-size: 2rem; font-weight: 700; color: var(--primary-color); margin: 0.5rem 0;" id="maxWaitDays">-</div>
+        </div>
+    </div>
+
+    <div class="charts-grid animate-fade-in">
+        <div class="chart-container">
+            <h3>交付时间趋势</h3>
+            <canvas id="deliveryTrendChart"></canvas>
+        </div>
+        <div class="chart-container">
+            <h3>各省份交付情况</h3>
+            <canvas id="provinceStatsChart"></canvas>
+        </div>
+    </div>
+
+    <div class="card animate-fade-in">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+            <h2 style="margin: 0;">交付数据-近100条</h2>
+            <div style="display: flex; gap: 1rem;">
+                <select id="provinceFilter">
+                    <option value="">所有省份</option>
+                </select>
+                <select id="modelFilter">
+                    <option value="">所有型号</option>
+                    <option value="标准">标准</option>
+                    <option value="PRO">PRO</option>
+                    <option value="MAX">MAX</option>
+                </select>
+                <button onclick="refreshData()" style="white-space: nowrap;">刷新数据</button>
+            </div>
+        </div>
+        
+        <div class="table-container">
+            <table>
+                <thead>
+                    <tr>
+                        <th>订单日期</th>
+                        <th>实际交付日期</th>
+                        <th>省份</th>
+                        <th>车型</th>
+                        <th>外观颜色</th>
+                        <th>内饰颜色</th>
+                        <th>等待天数</th>
+                    </tr>
+                </thead>
+                <tbody id="dataTableBody"></tbody>
+            </table>
+        </div>
+    </div>
+
+    <div class="card animate-fade-in">
+        <h2>留言板</h2>
+        <div class="input-group">
+            <div class="input-field">
+                <label>昵称</label>
+                <input type="text" id="nickname" placeholder="请输入您的昵称" 
+                       style="width: 100%; padding: 0.8rem 1rem; border: 2px solid #eee; border-radius: var(--border-radius-sm);">
+            </div>
+            <div class="input-field" style="grid-column: 1 / -1;">
+                <label>留言内容</label>
+                <textarea id="commentContent" 
+                          placeholder="说点什么吧..."
+                          style="width: 100%; height: 100px; padding: 0.8rem 1rem; border: 2px solid #eee; border-radius: var(--border-radius-sm); resize: vertical;"></textarea>
+            </div>
+            <div class="input-field">
+                <button onclick="submitComment()">发表留言</button>
+            </div>
+        </div>
+        <div id="commentsList" style="margin-top: 2rem;"></div>
+    </div>
+
+    <!-- 用户上传数据区域 -->
+    <div class="upload-section" id="uploadSection" style="display: none;">
+        <h3>上传交付数据</h3>
+        <form id="userUploadForm" class="upload-form">
+            <input type="file" id="userExcelFile" accept=".xlsx,.xls" required>
+            <button type="submit" class="btn-primary">上传数据</button>
+        </form>
+        <div class="upload-hint">
+            请上传您的真实交付数据，格式要求：预单日期、统计日期、车型、外观、内饰、省份、订单ID
+        </div>
+        <div class="points-info">
+            温馨提示：上传真实数据并通过审核后，将获得50积分奖励，可在购物车结算时抵扣50元
+        </div>
+        <div id="uploadPreview" style="margin-top: 20px; display: none;">
+            <h4>数据预览</h4>
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>预单日期</th>
+                        <th>统计日期</th>
+                        <th>车型</th>
+                        <th>外观</th>
+                        <th>内饰</th>
+                        <th>省份</th>
+                        <th>订单ID</th>
+                    </tr>
+                </thead>
+                <tbody></tbody>
+            </table>
+        </div>
+        <div id="uploadMessage" class="message" style="display: none;"></div>
+    </div>
+
+    <script>
+        // 保持原有的JavaScript代码不变，因为这些是功能性代码
+        // 仅添加图表样式相关的配置
+
+        Chart.defaults.color = '#666';
+        Chart.defaults.font.family = "'SF Pro Text', 'PingFang SC', 'Microsoft YaHei', sans-serif";
+        
+        const chartConfig = {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    position: 'top',
+                    labels: {
+                        padding: 20,
+                        font: { size: 13 }
+                    }
+                },
+                tooltip: {
+                    backgroundColor: 'rgba(0,0,0,0.8)',
+                    padding: 12,
+                    titleFont: { size: 14 },
+                    bodyFont: { size: 13 }
+                }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    grid: {
+                        color: 'rgba(0,0,0,0.05)'
+                    }
+                },
+                x: {
+                    grid: { display: false },
+                    ticks: {
+                        maxRotation: 45,
+                        minRotation: 45
+                    }
+                }
+            }
+        };
+
+        // 将原有的JavaScript代码放在这里
+        // ...（保持原有的功能性JavaScript代码不变）
+        // 声明图表变量
+let deliveryTrendChart = null;
+let provinceStatsChart = null;
+
+// 绘制交付时间趋势图
+function updateDeliveryTrendChart(data) {
+    const ctx = document.getElementById('deliveryTrendChart');
+    
+    if (deliveryTrendChart) {
+        deliveryTrendChart.destroy();
+    }
+    
+    const dates = data.records.map(r => r.order_date.split('T')[0]).reverse();
+    const waitingDays = data.records.map(r => r.waiting_days).reverse();
+    
+    deliveryTrendChart = new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: dates,
+            datasets: [{
+                label: '等待天数',
+                data: waitingDays,
+                borderColor: '#ff6700',
+                backgroundColor: 'rgba(255, 103, 0, 0.1)',
+                borderWidth: 2,
+                tension: 0.4,
+                fill: true,
+                pointBackgroundColor: '#fff',
+                pointBorderColor: '#ff6700',
+                pointBorderWidth: 2,
+                pointRadius: 4,
+                pointHoverRadius: 6
+            }]
+        },
+        options: {
+            ...chartConfig,
+            plugins: {
+                ...chartConfig.plugins,
+                title: {
+                    display: true,
+                    text: '交付等待时间变化趋势',
+                    padding: 20,
+                    font: {
+                        size: 16,
+                        weight: 600
+                    }
+                }
+            }
+        }
+    });
+}
+
+// 绘制省份统计图
+function updateProvinceStatsChart(data) {
+    const ctx = document.getElementById('provinceStatsChart');
+    
+    if (provinceStatsChart) {
+        provinceStatsChart.destroy();
+    }
+    
+    const provinceStats = {};
+    data.records.forEach(record => {
+        if (!provinceStats[record.province]) {
+            provinceStats[record.province] = {
+                sum: 0,
+                count: 0
+            };
+        }
+        provinceStats[record.province].sum += record.waiting_days;
+        provinceStats[record.province].count++;
+    });
+    
+    const provinces = Object.keys(provinceStats);
+    const avgWaitingDays = provinces.map(p => 
+        (provinceStats[p].sum / provinceStats[p].count).toFixed(1)
+    );
+    
+    provinceStatsChart = new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: provinces,
+            datasets: [{
+                label: '平均等待天数',
+                data: avgWaitingDays,
+                backgroundColor: '#ff6700'
+            }]
+        },
+        options: {
+            maintainAspectRatio: false,
+            responsive: true,
+            plugins: {
+                title: {
+                    display: true,
+                    text: '各省份平均等待时间'
+                }
+            },
+            scales: {
+                x: {
+                    grid: {
+                        display: false
+                    },
+                    ticks: {
+                        autoSkip: false,
+                        maxRotation: 45,
+                        minRotation: 45,
+                        font: {
+                            size: 11
+                        }
+                    }
+                },
+                y: {
+                    beginAtZero: true,
+                    title: {
+                        display: true,
+                        text: '平均等待天数'
+                    }
+                }
+            },
+            layout: {
+                padding: {
+                    bottom: 30
+                }
+            }
+        }
+    });
+}
+
+async function calculateProgress() {
+    try {
+        const orderDate = new Date(document.getElementById('orderDate').value);
+        const province = document.getElementById('province').value;
+        const modelType = document.getElementById('modelType').value;
+        
+        if (!orderDate || !province || !modelType) {
+            alert('请选择订单日期、省份和车型');
+            return;
+        }
+        
+        // 计算已经过去的天数
+        const today = new Date();
+        const daysPassed = Math.floor((today - orderDate) / (1000 * 60 * 60 * 24));
+
+        const response = await fetch('/api/calculate-progress', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                orderDate: orderDate.toISOString(),
+                province,
+                modelType
+            })
+        });
+        
+        const data = await response.json();
+        
+        if (!response.ok) {
+            throw new Error(data.message || data.error || '服务器错误');
+        }
+        if (data && typeof data.progress === 'number') {
+            const progress = data.progress.toFixed(2);
+            document.getElementById('progressBar').style.width = `${progress}%`;
+            document.getElementById('progressText').textContent = `进度: ${progress}%`;
+            
+            // 基于进度计算预计总等待天数
+            const predictedTotalDays = Math.ceil(daysPassed / (progress / 100));
+            estimatedDate = new Date(orderDate);
+            estimatedDate.setDate(estimatedDate.getDate() + predictedTotalDays);
+            document.getElementById('estimatedDeliveryDate').textContent = 
+                `预计交付日期(Beta2.0): ${estimatedDate.toISOString().split('T')[0]}`;
+
+            document.getElementById('confidenceText').textContent = 
+                `预测置信度: ${data.confidence.toFixed(1)}% (基于${data.predictionDetails.dataPoints}条数据，` +
+                `数据量权重:${data.predictionDetails.confidenceDetails.dataWeight}%, ` +
+                `误差权重:${data.predictionDetails.confidenceDetails.errorWeight}%, ` +
+                `趋势权重:${data.predictionDetails.confidenceDetails.trendWeight}%)`;
+            document.getElementById('trendText').textContent = 
+                `交付时间趋势: ${data.trend === '缩短' ? '正在缩短' : '正在延长'}`;
+            document.getElementById('recentDeliveryText').textContent = 
+                `${data.recentData.period}交付区间: ${data.recentData.min}-${data.recentData.max}天 ` +
+                `(${data.recentData.count}单，基于${data.recentData.sampleSize}条历史数据)`;
+        } else {
+            throw new Error('无效的响应数据');
+        }
+    } catch (error) {
+        console.error('计算进度时出错:', error);
+        document.getElementById('progressBar').style.width = '0%';
+        document.getElementById('progressText').textContent = '进度: 0%';
+        document.getElementById('estimatedDeliveryDate').textContent = '预计交付日期: -';
+        alert('计算进度时出错: ' + error.message);
+    }
+}
+
+async function refreshData() {
+    try {
+        const province = document.getElementById('provinceFilter').value;
+        const model = document.getElementById('modelFilter').value;
+        
+        const loadingIndicator = document.getElementById('loadingIndicator');
+        if (loadingIndicator) loadingIndicator.style.display = 'inline-block';
+        
+        const response = await fetch('/api/delivery-data', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ province, model })
+        });
+        
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        
+        const data = await response.json();
+        
+        if (!data.records || !Array.isArray(data.records)) {
+            throw new Error('Invalid data format');
+        }
+        
+        // 更新表格
+        updateTable(data);
+        // 更新图表
+        updateDeliveryTrendChart(data);
+        updateProvinceStatsChart(data);
+        // 更新统计数据
+        updateStats(data);
+        
+    } catch (error) {
+        console.error('获取数据失败:', error);
+        alert('获取数据失败: ' + error.message);
+    } finally {
+        const loadingIndicator = document.getElementById('loadingIndicator');
+        if (loadingIndicator) loadingIndicator.style.display = 'none';
+    }
+}
+
+function updateTable(data) {
+    const tbody = document.getElementById('dataTableBody');
+    tbody.innerHTML = '';
+    
+    data.records.forEach(record => {
+        const tr = document.createElement('tr');
+        const formatDate = (dateStr) => dateStr.split('T')[0];
+        tr.innerHTML = `
+            <td>${formatDate(record.order_date)}</td>
+            <td>${formatDate(record.delivery_date)}</td>
+            <td>${record.province}</td>
+            <td>${record.model_type}</td>
+            <td>${record.exterior_color}</td>
+            <td>${record.interior_color}</td>
+            <td>${record.waiting_days}</td>
+        `;
+        tbody.appendChild(tr);
+    });
+}
+
+function updateStats(data) {
+    if (data.statistics) {
+        document.getElementById('avgWaitDays').textContent = data.statistics.avg !== null ? data.statistics.avg.toFixed(1) : '暂无数据';
+        document.getElementById('minWaitDays').textContent = data.statistics.min !== null ? data.statistics.min : '暂无数据';
+        document.getElementById('maxWaitDays').textContent = data.statistics.max !== null ? data.statistics.max : '暂无数据';
+    }
+}
+
+async function submitComment() {
+    const nickname = document.getElementById('nickname').value.trim();
+    const content = document.getElementById('commentContent').value.trim();
+    
+    if (!nickname || !content) {
+        alert('请填写昵称和留言内容');
+        return;
+    }
+    
+    try {
+        const response = await fetch('/api/comments', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ nickname, content })
+        });
+        
+        if (response.ok) {
+            alert('留言提交成功，等待审核');
+            document.getElementById('nickname').value = '';
+            document.getElementById('commentContent').value = '';
+            loadComments();
+        } else {
+            throw new Error('提交失败');
+        }
+    } catch (error) {
+        console.error('提交留言失败:', error);
+        alert('提交留言失败，请稍后重试');
+    }
+}
+
+function escapeHTML(str) {
+    return str
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
+}
+
+async function loadComments() {
+    try {
+        const response = await fetch('/api/comments');
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        const comments = await response.json();
+        
+        if (!Array.isArray(comments)) {
+            throw new Error('Invalid comments data format');
+        }
+
+        const commentsList = document.getElementById('commentsList');
+        if (commentsList) {
+            commentsList.innerHTML = comments.map(comment => `
+                <div class="comment-item" style="border-bottom: 1px solid #eee; padding: 1.5rem 0;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.8rem;">
+                        <span style="color: var(--primary-color); font-weight: 600;">
+                            ${escapeHTML(comment.nickname)}
+                            ${comment.nickname === 'F0Xy' ? 
+                                '<span style="background: var(--primary-color); color: white; padding: 2px 6px; border-radius: 4px; font-size: 12px; margin-left: 8px;">管理员</span>' 
+                                : ''}
+                        </span>
+                        <span style="color: var(--text-secondary); font-size: 0.875rem;">
+                            ${new Date(comment.created_at).toLocaleString()}
+                        </span>
+                    </div>
+                    <div style="color: var(--text-primary); line-height: 1.6;">
+                        ${escapeHTML(comment.content)}
+                    </div>
+                </div>
+            `).join('') || '<div style="text-align: center; color: var(--text-secondary); padding: 2rem;">暂无评论</div>';
+        }
+    } catch (error) {
+        console.error('加载留言失败:', error);
+        const commentsList = document.getElementById('commentsList');
+        if (commentsList) {
+            commentsList.innerHTML = '<div style="color: var(--primary-color); text-align: center; padding: 2rem;">加载评论失败，请稍后重试</div>';
+        }
+    }
+}
+
+async function initializeFilters() {
+    try {
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 5000); // 设置5秒超时
+
+        const response = await fetch('/api/provinces', { signal: controller.signal });
+        clearTimeout(timeoutId);
+
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        const provinces = await response.json();
+
+        if (!Array.isArray(provinces)) {
+            throw new Error('Invalid provinces data format');
+        }
+
+        const provinceSelects = [
+            document.getElementById('province'),
+            document.getElementById('provinceFilter')
+        ];
+
+        provinceSelects.forEach(select => {
+            if (select) {
+                select.innerHTML = '<option value="">选择省份</option>';
+                const fragment = document.createDocumentFragment();
+                provinces.forEach(province => {
+                    const option = document.createElement('option');
+                    option.value = province;
+                    option.textContent = province;
+                    fragment.appendChild(option);
+                });
+                select.appendChild(fragment);
+            } else {
+                console.warn('未找到省份选择器:', select ? 'province' : 'provinceFilter');
+            }
+        });
+
+        try {
+            await refreshData();
+        } catch (error) {
+            console.error('刷新数据失败:', error);
+        }
+    } catch (error) {
+        if (error.name === 'AbortError') {
+            console.error('请求超时:', error);
+        } else {
+            console.error('初始化过滤器失败:', error);
+        }
+    }
+}
+
+// 检查用户登录状态并更新UI
+async function checkLoginStatus() {
+    try {
+        const response = await fetch('/api/check-auth');
+        const data = await response.json();
+        
+        // 根据登录状态显示相关元素
+        const beforeLogin = document.getElementById('beforeLogin');
+        const afterLogin = document.getElementById('afterLogin');
+        const loginLink = document.getElementById('loginLink');
+        
+        if (data.authenticated) {
+            // 用户已登录
+            beforeLogin.style.display = 'none';
+            afterLogin.style.display = 'block';
+            
+            // 从localStorage获取用户信息
+            const userInfo = JSON.parse(localStorage.getItem('user') || '{}');
+            const usernameEl = document.getElementById('username');
+            
+            // 显示用户名
+            if (usernameEl && userInfo.username) {
+                usernameEl.textContent = userInfo.username;
+            }
+            
+            // 修改登录图标样式
+            loginLink.innerHTML = `<i class="fas fa-user-check"></i>`;
+            loginLink.title = '个人信息';
+            
+            // 如果是管理员，添加管理员标识
+            if (userInfo.is_admin) {
+                document.getElementById('usernameDisplay').innerHTML += 
+                    '<span style="font-size: 11px; background: var(--primary-color); color: white; padding: 2px 6px; border-radius: 4px; margin-left: 5px;">管理员</span>';
+                
+                // 添加后台管理入口
+                const adminLink = document.createElement('a');
+                adminLink.href = 'admin/dashboard.html';
+                adminLink.className = 'user-dropdown-item';
+                adminLink.innerHTML = '<i class="fas fa-tachometer-alt mr-2"></i> 管理后台';
+                
+                // 插入到个人中心和我的收藏之间
+                const userCenterLink = document.querySelector('a[href="user-center.html"]');
+                userCenterLink.parentNode.insertBefore(adminLink, userCenterLink.nextSibling);
+            }
+        } else {
+            // 用户未登录
+            beforeLogin.style.display = 'block';
+            afterLogin.style.display = 'none';
+            loginLink.innerHTML = `<i class="fas fa-user"></i>`;
+            loginLink.title = '登录/注册';
+        }
+    } catch (error) {
+        console.error('检查登录状态失败:', error);
+    }
+}
+
+// 检查登录状态并显示上传区域
+function checkLoginAndShowUpload() {
+    const isLoggedIn = localStorage.getItem('isLoggedIn') === 'true';
+    const uploadSection = document.getElementById('uploadSection');
+    if (isLoggedIn) {
+        uploadSection.style.display = 'block';
+    } else {
+        uploadSection.style.display = 'none';
+    }
+}
+
+// 处理用户上传数据
+document.getElementById('userUploadForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const formData = new FormData();
+    const fileInput = document.getElementById('userExcelFile');
+    
+    if (!fileInput.files || !fileInput.files[0]) {
+        alert('请选择要上传的文件');
+        return;
+    }
+    
+    formData.append('file', fileInput.files[0]);
+
+    const messageDiv = document.getElementById('uploadMessage');
+    messageDiv.className = 'message';
+    messageDiv.style.display = 'block';
+    messageDiv.textContent = '正在上传...';
+
+    try {
+        const response = await fetch('/api/user/upload-data', {
+            method: 'POST',
+            body: formData
+        });
+        const result = await response.json();
+        
+        if (response.ok) {
+            messageDiv.className = 'message success';
+            messageDiv.textContent = '数据上传成功，请等待审核。审核通过后将获得50积分奖励！';
+        } else {
+            messageDiv.className = 'message error';
+            messageDiv.textContent = result.error || '上传失败';
+        }
+    } catch (error) {
+        console.error('上传出错:', error);
+        messageDiv.className = 'message error';
+        messageDiv.textContent = '上传过程中发生错误';
+    }
+});
+
+// 文件选择预览
+document.getElementById('userExcelFile').addEventListener('change', async (e) => {
+    const file = e.target.files[0];
+    if (file) {
+        const formData = new FormData();
+        formData.append('file', file);
+        
+        try {
+            const response = await fetch('/api/user/preview-data', {
+                method: 'POST',
+                body: formData
+            });
+            const data = await response.json();
+            
+            const previewSection = document.getElementById('uploadPreview');
+            const tbody = document.querySelector('#uploadPreview .data-table tbody');
+            tbody.innerHTML = '';
+            
+            data.preview.slice(0, 5).forEach(row => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td>${row['0']}</td>
+                    <td>${row['1']}</td>
+                    <td>${row['2']}</td>
+                    <td>${row['3']}</td>
+                    <td>${row['4']}</td>
+                    <td>${row['5']}</td>
+                    <td>${row['6']}</td>
+                `;
+                tbody.appendChild(tr);
+            });
+            
+            previewSection.style.display = 'block';
+        } catch (error) {
+            console.error('预览出错:', error);
+        }
+    }
+});
+
+// 退出登录功能
+function logout() {
+    fetch('/api/logout', { method: 'POST' })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                // 清除本地存储
+                localStorage.removeItem('isLoggedIn');
+                localStorage.removeItem('user');
+                
+                // 显示成功消息
+                alert('退出登录成功！');
+                
+                // 刷新页面
+                window.location.reload();
+            }
+        })
+        .catch(error => {
+            console.error('退出登录失败:', error);
+            alert('退出登录失败，请重试');
+        });
+}
+
+// 初始化
+document.addEventListener('DOMContentLoaded', () => {
+    initializeFilters().catch(console.error);
+    loadComments().catch(console.error);
+    // 检查用户登录状态
+    checkLoginStatus();
+    checkLoginAndShowUpload();
+});
+
+    </script>
+</body>
+</html>

@@ -1,0 +1,23 @@
+# dependencies
+node_modules/
+
+# secrets
+.env
+
+# logs
+*.log
+npm-debug.log*
+
+# os
+.DS_Store
+
+# backups / archives (cruft)
+*.zip
+*.tar.gz
+*.bakcup
+server.js_*
+
+# server-specific config / cert challenges
+.well-known/
+.user.ini
+.htaccess
